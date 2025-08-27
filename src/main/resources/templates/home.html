@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <title>Test</title>
+</head>
+
+
+<body>
+  <div>
+     <button id="test" onclick="test()">Text</button>
+  </div>
+</body>
+
+<script>
+   function test(){
+	   const x=new XMLHttpRequest();
+	   
+	   x.onreadystatechange=function(){
+		   console.log("ReadyState: " + x.readyState);
+		   if(x.readyState==4 && x.status==200){
+			   
+			   
+			   window.location.href="/login";
+		   }
+	   }
+	   x.open("GET","/test",true);
+	   x.send();
+   }
+
+
+
+
+</script>
+
+
+
+
+</html>

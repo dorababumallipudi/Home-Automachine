@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+      <title>signin</title>      
+<style type="text/css">
+body{
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to left, #83a4d4, #b6fbff);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    height: 100vh;
+    justify-content: center;
+    align-items: center;
+}    
+
+form {
+  background-color: #ffffff;
+  padding: 30px 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  width: 350px;
+  max-width: 90%;
+}
+
+h3 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+table {
+  width: 100%;
+}
+
+td {
+  padding: 10px 5px;
+  vertical-align: top;
+}
+
+label {
+  font-weight: bold;
+  color: #555;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+  color: black;
+}
+
+input:focus {
+  border-color: #007BFF;
+  outline: none;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+  align-items: center;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+#errorId {
+  color: red;
+  margin-top: 10px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 14px;
+}
+</style>
+  </head>
+  <body>
+      
+       <form id="signinForm">
+          <h3>signin</h3>
+          <table>
+              <tr>
+                  <td><label>username</label></td>
+                  <td><input id="usd" name="usd" placeholder="Enter username" required="required" type="text" ></td>
+              </tr>
+              <tr>
+                  <td>email</td>
+                  <td><input id="email" name="email" placeholder="Enter the eamil" required="required" type="email"></td>
+              </tr>
+              <tr>
+                  <td>password</td>
+                  <td><input id="pswd" name="pswd" placeholder="Enter the password" required="required" type="password"></td>
+              </tr>         
+           </table>
+              <div>
+                  <button type="button"onclick="signin()">signin</button></td>
+              </div>
+              <div>
+                  <p>I already have an account <a onclick="redirect()">login</a></p>
+                  
+              </div>
+           <div id="errorId" style="color: red"></div>
+      </form>
+      
+      
+      <script>
+            function signin(){
+        	  const usd =  document.getElementById("usd").value.trim();
+        	  const email = document.getElementById("email").value.trim();
+        	  const  pswd = document.getElementById("pswd").value.trim();
+        	  
+        	  if(!usd || !email || !pswd ){
+        		  document.getElementById("errorId").innerHTML = "Enter all signin details";
+        		  return;
+        	  }
+        	  
+        	  const data={
+        			  userName : usd,
+        			  email : email,
+        			  password : pswd
+        	  };
+
+        	  const x = new XMLHttpRequest();
+        	  x.onreadystatechange = function fun(){
+        		  if(x.readyState == 4 && x.status == 200){
+        			  if(x.responseText == "success"){
+        				  alert("Registered Successfully");
+        				  window.location.href = "/login"
+        			  }else{
+        				  document.getElementById("errorId").innerHTML=x.responseText;
+        			  }
+        		  }
+        	  }	  
+        	  x.open("post", `/signinuser`, true);
+        	  x.setRequestHeader("Content-Type","application/json");
+              x.send(JSON.stringify(data));
+          }
+            
+           
+          function redirect(){
+        	  window.location.href = "/login"
+          }
+      </script>
+  </body> 
+</html>

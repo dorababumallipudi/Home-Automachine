@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Dashboard</title>
+<link rel="stylesheet" href="/bootstrap/bootstrap.min.css">
+<script src="/bootstrap/bootstrap.bundle.min.js"></script>
+<style>
+body {
+    background:linear-gradient(to right,#83a4d4,#b6fbff);
+}
+.container-box {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+}
+
+td , th {
+    padding: 10px;
+    color: black;
+    background-color: white;
+    text-align: center;
+    max-width: 5cm;
+}
+
+.addRoom {
+    margin-left: 200px;
+    padding: 10px;
+    border: 2px solid;
+    border-color:#6a00ff;
+    border-radius: 5px;
+}
+
+.action-btns {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+.logout-btn {
+    width: 100%;
+    margin-top: 15px;
+}
+input:hover {
+	border-color: #0bf4b4;
+}
+tr:hover{
+    
+    background-color: #0bf4b4;
+}
+td:hover{
+    
+    background-color: #0bf4b4;
+}
+</style>
+</head>
+<body class="p-4">
+
+<div class="container" style="max-width: 1500px; margin-left:auto; margin-right:auto; max-height: max-content;">
+    <h3 id="userwelcome" class="mb-4" style="font-size: 30px;">Welcome!</h3>
+    
+    <div class="container-box">
+        <div>
+            <input placeholder="enter room" id="enterRoom" class="addRoom">
+            <button class="btn btn-success" onclick="addRoom()" style="margin-left: 10px;">Add Room</button>
+        </div>
+        <table class="table table-bordered table-md" id="tableContainer">
+         <thead>
+             <tr>
+                 <th>ROOM NAME</th>
+                 <th>DEVICE NAME</th>
+                 <th>ON/OFF</th>
+                 <th>ACTION</th>
+                 <th>ACTION</th>
+             </tr>    
+         </thead>
+         <tbody id="roomList">
+             <!-- rows will be added here -->
+         </tbody>
+        </table>
+        
+        <div class="action-btns">
+             <div id="roomadd"></div>
+             <div id="errorid"></div>
+        </div>
+    </div>
+
+    <div>
+        <button class="btn btn-danger logout-btn" style="margin-left: 1300px; max-width: 100px;" onclick="logout()">Log Out</button>
+    </div>
+</div>
+
+<script>
+window.onload = function() {
+    const userName = localStorage.getItem("userName");
+    document.getElementById("userwelcome").innerText = `Welcome ${userName}`;
+    fetchRooms();
+}
+
+function fetchRooms() {
+    const userId = localStorage.getItem("userId");
+    const x = new XMLHttpRequest();
+    x.onreadystatechange = function () {
+        if (x.readyState == 4 && x.status == 200) {
+            const Rooms = JSON.parse(this.responseText);
+            
+            const tableContainer = document.getElementById("roomList");
+            tableContainer.innerHTML = "";
+
+            let lastRoom = "";
+            let roomDevicesCount = 0;
+
+            for (let i = 0; i < Rooms.length; i++) {
+                const  row = document.createElement("tr");
+                row.style.alignContent = "center";
+                row.style.fontSize = "18px"; 
+
+                //room is one for all devices then rowspan increases to count of devices
+                if (Rooms[i].roomName !== lastRoom || i == 0) {
+                    roomDevicesCount = Rooms.filter(r => r.roomName === Rooms[i].roomName).length;
+                    const roomCell = document.createElement("td");
+                    roomCell.textContent = Rooms[i].roomName;
+                    roomCell.style.verticalAlign = "center";
+                    roomCell.rowSpan = roomDevicesCount;
+                    lastRoom = Rooms[i].roomName;
+                    row.appendChild(roomCell);
+                }
+
+                //creating row for device name
+                const deviceCell = document.createElement("td");
+                deviceCell.textContent = Rooms[i].deviceName || "-";
+                row.appendChild(deviceCell);
+
+                // ---- Device Status ----
+                const deviceStatus = document.createElement("td");
+                const toggleButton = document.createElement("button");
+                if(Rooms[i].deviceName !== null){
+                	toggleButton.style.display = "block";
+                	toggleButton.textContent = Rooms[i].deviceStatus;
+                	toggleButton.className = "btn btn-sm";
+                	deviceStatus.style.alignContent = "center";
+                    if(Rooms[i].deviceStatus == "ON"){
+                	    toggleButton.style.backgroundColor = "green";
+                    }else{
+                        toggleButton.style.backgroundColor = "red";
+                    }
+                	
+                }else{
+                	toggleButton.style.display = "none";
+                }
+                //updating deviceStatus
+                toggleButton.onclick = function(){
+                    
+                	const temproomId = Rooms[i].roomId;
+                	const tempDeviceId = Rooms[i].deviceId;
+                	
+                	let tempDeviceStatus = null;
+                	if(Rooms[i].deviceStatus === "ON"){
+                        tempDeviceStatus = "OFF";
+                	}else{
+                        tempDeviceStatus = "ON";
+                	}
+                	
+                    const  xhrUp = new XMLHttpRequest();
+                    
+                    xhrUp.onreadystatechange = function(){
+                    	if(xhrUp.readyState == 4 && xhrUp.status == 200){
+                            fetchRooms();
+                        }
+                    }
+                    xhrUp.open("PUT",`/devices/deviceStatusUpdate`,true);
+                    xhrUp.setRequestHeader("Content-Type","application/json");
+                    xhrUp.send(JSON.stringify({
+                        roomId: temproomId,
+                        deviceId: tempDeviceId,
+                        deviceStatus: tempDeviceStatus
+                    }))
+                };
+                
+                deviceStatus.appendChild(toggleButton);
+                row.appendChild(deviceStatus);
+                
+                
+                //action button for delete device (for one device one button)
+                const actionCell = document.createElement("td");
+               	const deleteDeviceBtn = document.createElement("button");
+                if(Rooms[i].deviceName !== null){
+                    deleteDeviceBtn.textContent = "Delete Device";
+                    deleteDeviceBtn.className = "btn btn-danger btn-sm";
+                    deleteDeviceBtn.style.display = "block";
+                    deleteDeviceBtn.dataset.deviceId = Rooms[i].deviceId;
+                }else{
+                    deleteDeviceBtn.style.display = "none";
+                }
+                deleteDeviceBtn.onclick = function () {
+                    if (confirm("Delete this device?"+ `${Rooms[i].deviceName}`)) {
+                        const deviceIdBtn = parseInt(this.dataset.deviceId);
+                        const xhrDel = new XMLHttpRequest();
+                        xhrDel.open("DELETE", `/devices/deletedevice/${deviceIdBtn}`, true);
+                        xhrDel.onreadystatechange = function () {
+                            if (xhrDel.readyState === 4 && xhrDel.status === 200) {
+                                fetchRooms();
+                            }
+                        };
+                        xhrDel.send();
+                    }
+                };
+                actionCell.appendChild(deleteDeviceBtn);
+                row.appendChild(actionCell);
+
+                // action coloumn adds for rooms (one room = add device + delete room button)
+                if (i ===0 || Rooms[i].roomName !== Rooms[i - 1].roomName) {
+                    const roomActionCell = document.createElement("td");
+                    roomActionCell.rowSpan = roomDevicesCount;
+
+                    // Add Device Button
+                    const addDeviceBtn = document.createElement("button");
+                    let room = Rooms[i];
+                    addDeviceBtn.dataset.roomId = room.roomId;
+                    addDeviceBtn.textContent = "Add Device";
+                    addDeviceBtn.className = "btn btn-success btn-sm d-block mb-2";
+                    addDeviceBtn.onclick = function () {
+                        const newDevice = prompt("Enter new device name:").toUpperCase();
+                        
+                        if (newDevice) {
+                        	
+                            
+                            const xhr = new XMLHttpRequest();
+                            xhr.open("POST", `/devices/add`, true);
+                            xhr.setRequestHeader("Content-Type", "application/json");
+                            xhr.onreadystatechange = function () {
+                                if (xhr.readyState === 4 && xhr.status === 200) {
+                                    fetchRooms();
+                                }
+                            };
+                            xhr.send(JSON.stringify({                              
+                                roomId: parseInt(this.dataset.roomId),
+                                deviceName: newDevice
+                            }));
+                        }
+                    };
+                    roomActionCell.appendChild(addDeviceBtn);
+
+                    // Delete Room Button
+                    const deleteRoomBtn = document.createElement("button");
+                    deleteRoomBtn.textContent = "Delete Room";
+                    
+                    deleteRoomBtn.dataset.roomId = Rooms[i].roomId;
+                    deleteRoomBtn.className = "btn btn-danger btn-sm d-block";
+                    
+                    deleteRoomBtn.onclick = function () {
+                        const roomIdToBtn = parseInt(this.dataset.roomId);
+                        if (confirm(`Delete room ${Rooms[i].roomName}?`)) {
+                            const xhrRoom = new XMLHttpRequest();
+                            xhrRoom.open("DELETE", `/rooms/delete/${roomIdToBtn}`, true);
+                            xhrRoom.onreadystatechange = function () {
+                                if (xhrRoom.readyState === 4 && xhrRoom.status === 200) {
+                                    console.log("response",xhrRoom.responseText);
+                                    fetchRooms();
+                                }
+                            };
+                            xhrRoom.send();
+                        }
+                    };
+                    roomActionCell.appendChild(deleteRoomBtn);
+
+                    row.appendChild(roomActionCell);
+               }
+                
+                
+
+
+                tableContainer.appendChild(row);
+                
+                lastRoom = Rooms[i].roomName;
+            }
+        }
+    };
+    x.open("GET", `rooms/${userId}`, true);
+    x.send();
+}
+
+ // add room funtion
+function addRoom(){
+    const xml = new XMLHttpRequest();
+    const roomInput = document.getElementById("enterRoom");
+    let newroom = roomInput.value.toUpperCase().trim();
+    const userId = localStorage.getItem("userId");
+    
+    //checks wheather the input is empty
+    if(!newroom){     
+        roomInput.value = "";
+        roomInput.style.backgroundColor = "#f10e61";
+        roomInput.placeholder = "Room name is empty";
+        return;
+    }
+    
+
+    
+    
+    xml.onreadystatechange = function fun(){
+         if(xml.readyState == 4 && xml.status == 200){
+        	if(xml.responseText == "Room added successfully"){       
+                alert("room added Successfully")
+        	    document.getElementById("enterRoom").value = "";
+        	    fetchRooms();
+            }
+            else{
+                alert("Room already exists");
+            }
+         }
+    }
+    xml.open("POST", "/rooms/add", true);
+    xml.setRequestHeader("Content-Type","application/json");
+    xml.send(JSON.stringify({roomName : newroom,userId : userId}));
+}
+
+
+function logout() {
+    localStorage.removeItem("userName");
+    window.location.href = "/login";
+}
+</script>
+</body>
+</html>

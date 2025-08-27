@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Login Page</title>
+
+<link rel="stylesheet" href="/bootstrap/bootstrap.min.css">
+
+<style type="text/css">
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to right, #83a4d4, #b6fbff);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    height: 100vh;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .form {
+  background-color: #ffffff;
+  padding: 30px 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  width: 400px;
+  max-width: 100%;
+}
+
+.form h3 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+table {
+  width: 100%;
+}
+
+td {
+  padding: 10px 5px;
+  vertical-align: top;
+}
+
+label {
+   font-weight: bold;
+   color: #555;
+   font-size: 16px;
+   padding-top: 10px;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"] {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+}
+
+input:focus {
+  border-color: #007BFF;
+  outline: none;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 10px;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+#errorId {
+  color: red;
+  margin-top: 10px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 14px;
+}
+</style>
+
+
+
+
+<script src="/bootstrap.bundle.min.js"></script>
+
+</head>
+<body>
+  <div class="form">
+	<h3>Login</h3>
+	<form id="loginForm">
+	  <div>
+	      <table>
+	          <tr>  
+	            <td><label for="userName">USER NAME</label></td> 
+ 	    	    <td><input id="userName" name="userName" placeholder="Enter user name" type="text"></td>
+	 	 	  </tr>	 	 	  
+	 	 	  <tr>  
+	            <td><label for="password">PASSWORD</label></td>
+ 	    	    <td><input id="password" name="userpwd" placeholder="Enter user password" type="password"></td>
+ 	    	  </tr>      
+	      </table>    
+	  </div>
+	  <button type="button" onclick="login()">LOGIN</button>
+	  <p>i dont have an account <a href="/signin">signin</a></p>
+	</form>
+	<div id="errorId"></div>
+  </div>
+	<script>
+	 function login(){
+		 const userName=document.getElementById("userName").value.trim();
+		 const password=document.getElementById("password").value.trim();
+		 
+		 const x=new XMLHttpRequest();
+		 x.onreadystatechange=function f(){
+			 if(x.readyState==4 && x.status==200){
+                 const user = JSON.parse(x.responseText);
+				 if(user.status =="success"){
+					
+					 localStorage.setItem("userName", user.userName);
+                     localStorage.setItem("userId",user.userId);
+					 window.location.href = "/rooms";
+				 }
+				 else{
+					 document.getElementById("errorId").innerHTML="invalid username and password";
+					 document.getElementById("userName").value = "";
+					 document.getElementById("password").value = "";
+				 }
+			 }
+		 }
+		 x.open("POST",`/loginUser/${userName}/${password}`,true);
+		 x.send();
+		 
+	 }
+	 
+	 function signin(){
+		 const xh = new XMLHttpRequest();
+		 xh.onreadystatechange = function fun(){
+			 if(xh.readyState ==4 && xh.status == 200){
+				 if(xh.responseText == "create account"){
+					 window.location.href = "/signin";
+				 }
+			 }
+		 }
+		 xh.open("GET",`/register`,true);
+		 xh.send();
+	 }
+	 
+	 function redircttosignin(){
+		 window.location.href = "/signin";
+	 }	  
+	 </script>
+	 <script src="/bootstrap/bootstrap.bundle.min.js"></script>
+</body>
+</html>
