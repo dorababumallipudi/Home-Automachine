@@ -21,14 +21,18 @@ public class DevicesControllers {
 	@Autowired
 	DevicesDaoImp DDI;
 	/**
-	 * This method call the DDI.addDevice(request.getDeviceName(), request.getRoomId() and add the deivce 
+	 * This method call the DDI.addDevice(request.getDeviceName(), request.getRoomId() and add the device
 	 * using user name and room id
 	 * @param request
 	 * @return boolean
 	 */
 	@PostMapping("/add")
-	public boolean addDevice(@RequestBody Devices request) {
-		return DDI.addDevice(request.getDeviceName(), request.getRoomId())>0;
+	public ResponseEntity<String> addDevice(@RequestBody Devices device) {
+		if(DDI.addDevice(device.getDeviceName(), device.getRoomId())>0) {
+			return ResponseEntity.ok("Device added successfully");		
+		}else {
+			return ResponseEntity.ok("Device already exists");
+		}
 		
 	}
 	/**

@@ -41,8 +41,14 @@ public class DevicesDaoImp implements DevicesDao{
      */
 	@Override
 	public int addDevice(String deviceName,int roomId ) {
-		String Query = "INSERT INTO devices (device_name,room_id) VALUES (?,?)";
-		return jdbctemp.update(Query,deviceName,roomId);
+		String query1 = "SELECT count(*) FROM devices Where room_id = ? AND device_name = ?";
+		int count = jdbctemp.queryForObject(query1,Integer.class, roomId,deviceName);
+		if(count > 0 ) {
+			return -1;
+		}
+		
+		String Query2 = "INSERT INTO devices (device_name,room_id) VALUES (?,?)";
+		return jdbctemp.update(Query2,deviceName,roomId);
 	}
     /**
      * This method delete the device using the deiveid
