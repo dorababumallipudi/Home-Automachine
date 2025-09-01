@@ -19,11 +19,8 @@ com.home.autoMachine
 │ └── UserDaoImpl.java
 ├── models
 │ ├── Devices.java
-│ ├── Home.java
+│ ├── Room.java
 │ └── Users.java
-
-
-
 
   Technologies Used
 - Java (Spring Boot)
