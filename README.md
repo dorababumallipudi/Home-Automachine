@@ -22,6 +22,10 @@ com.home.autoMachine
 │ ├── Room.java
 │ └── Users.java
 
+
+
+
+
   Technologies Used
 - Java (Spring Boot)
 - MySQL (JDBC with JdbcTemplate)
