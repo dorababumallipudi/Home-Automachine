@@ -26,6 +26,10 @@ com.home.autoMachine
 
 
 
+
+
+
+
   Technologies Used
 - Java (Spring Boot)
 - MySQL (JDBC with JdbcTemplate)
